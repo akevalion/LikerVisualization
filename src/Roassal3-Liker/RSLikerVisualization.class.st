@@ -74,14 +74,14 @@ RSLikerVisualization >> prepareSums [
 
 { #category : #hooks }
 RSLikerVisualization >> renderChartIn: aCanvas [
-	| shape |
+	| shape center |
 	chart := RSChart new.
 	chart container: aCanvas.
 	chart extent: 500@220.
 	chart padding: 10.
-	
-	chart addDecoration: (RSXMarkerDecoration new value: sums min * -1).
-	sums := sums + (sums min * -1).
+	center := sums min * -1.
+	chart addDecoration: (RSXMarkerDecoration new value: center).
+	sums := sums + center.
 	
 	scale do: [ :s | | widths |
 		widths := headers collect: [ :h | (data at: h) at: s ].
@@ -90,7 +90,11 @@ RSLikerVisualization >> renderChartIn: aCanvas [
 			barSize: 20.
 		sums := sums + widths.
 	 ].
-	chart addDecoration: (RSHorizontalTick new numberOfTicks: 10; color: Color black).
+	chart addDecoration: (RSHorizontalLikerTick new 
+		numberOfTicks: 10;
+		color: Color black;
+		center: center;
+		yourself).
 	(chart xlabel: 'Number of Responses') baseShape
 		fontSize: 15;
 		color: Color black.
