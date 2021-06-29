@@ -24,7 +24,7 @@ RSLikerVisualization >> example01 [
 		extent: 900@700;
 		position: 100@100'>
 	self
-		fileName: 'survey_when_example.csv';
+		fileName: '.\pharo-local\iceberg\LikerVisualization\survey_when_example.csv';
 		scale: #('Never'
 	     'Sometimes'
 	     'Regularly'
