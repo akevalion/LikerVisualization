@@ -58,6 +58,12 @@ RSLikerVisualization >> fileName: aString [
 	fileName := aString
 ]
 
+{ #category : #colors }
+RSLikerVisualization >> mainColorPalette [
+	^ NSScale ordinal 
+		range: #('b22222' 'f08080' 'dcdcdc' '6495ed' '00008b')
+]
+
 { #category : #hooks }
 RSLikerVisualization >> prepareData [
 	| string lines |
@@ -100,6 +106,7 @@ RSLikerVisualization >> renderChartIn: aCanvas [
 	center := sums min * -1.
 	chart addDecoration: (RSXMarkerDecoration new value: center).
 	sums := sums + center.
+	chart colors: self mainColorPalette.
 	
 	scale do: [ :s | | widths |
 		widths := headers collect: [ :h | (data at: h) at: s ].
@@ -134,6 +141,7 @@ RSLikerVisualization >> renderDoNotKnowChartIn: aCanvas [
 	c extent: 100@ 220.
 	c container: comp.
 	c padding: 10.
+	c colors: self secondColorPalette.
 	left := Array new: (answers at: answers keys anyOne) size withAll: 0.
 	answers keysAndValuesDo: [ :k :list |
 		(c barWidths: list)
@@ -189,4 +197,10 @@ RSLikerVisualization >> renderLegendIn: aCanvas chart: aChart labels: labels gap
 { #category : #accessing }
 RSLikerVisualization >> scale: aCollection [
 	scale := aCollection
+]
+
+{ #category : #colors }
+RSLikerVisualization >> secondColorPalette [
+	^ NSScale ordinal
+		range: #('358f40' 'ff7f27')
 ]
