@@ -21,9 +21,7 @@ RSLikerVisualization >> answersData [
 			thenCollect: [ :k | (d at: k) ]) sum ].
 	doNotKnow := headers collect: [ :h | | d |
 		d := data at: h.
-		(d keys 
-			select: [ :k | k = 'Do not know' ]
-			thenCollect: [ :k | (d at: k) ]) sum ].
+		d at: 'Do not know' ifAbsent: [ 0 ] ].
 	^ OrderedDictionary new
 		at: 'Answered' put: total - doNotKnow;
 		at: 'Do not know' put: doNotKnow;
@@ -129,7 +127,7 @@ RSLikerVisualization >> renderChartIn: aCanvas [
 	chart build.
 	shape := chart decorations first shape.
 	shape border color: Color black; joinMiter.
-	self renderLegendIn: aCanvas chart: chart labels: scale gapSize: 30.
+	self renderLegendIn: aCanvas chart: chart labels: scale gapSize: 15.
 ]
 
 { #category : #hooks }
@@ -179,7 +177,7 @@ RSLikerVisualization >> renderLegendIn: aCanvas chart: aChart labels: labels gap
 	b := RSLegend new.
 	b defaultLabel color: Color black.
 	b container: aCanvas.
-	b layout horizontal gapSize: aNumber.
+	b layout grid lineItemsCount: 3; gapSize: aNumber.
 	b location offset: 0@20.
 	labels with: aChart plots do: [ :s :plot | 
 		b text: s withBoxColor: plot computeColor].
