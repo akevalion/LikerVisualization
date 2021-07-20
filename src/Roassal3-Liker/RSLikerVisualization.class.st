@@ -1,3 +1,6 @@
+"
+A basic liker visualization
+"
 Class {
 	#name : #RSLikerVisualization,
 	#superclass : #RSAbstractContainerBuilder,
@@ -46,6 +49,24 @@ RSLikerVisualization >> example01 [
 	     'Regularly'
 	     'Often'
 	     'Always').
+	self build.
+	^ self canvas.
+		
+]
+
+{ #category : #examples }
+RSLikerVisualization >> example02 [
+	<script: 'self new example02 open
+		setLabel: ''Liker Chart'';
+		extent: 900@700;
+		position: 100@100'>
+	self
+		fileName: '.\pharo-local\iceberg\LikerVisualization\survey_importance.csv';
+		scale: #('No importance'
+	     'Little importance'
+	     'Moderately important'
+	     'Rather important'
+	     'Very important').
 	self build.
 	^ self canvas.
 		

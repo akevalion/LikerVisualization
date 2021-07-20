@@ -1,3 +1,6 @@
+"
+This custom tick is used to define the mirrow visualization
+"
 Class {
 	#name : #RSHorizontalLikerTick,
 	#superclass : #RSHorizontalTick,
@@ -21,7 +24,8 @@ RSHorizontalLikerTick >> initialize [
 
 { #category : #accessing }
 RSHorizontalLikerTick >> ticksData [ 
-	| ticksData |
+	| ticksData delta |
 	ticksData := niceLabel min to: niceLabel max by: niceLabel step.
-	^ ticksData + center - (ticksData at: (ticksData size // 2) + 1)
+	delta := ticksData size even ifTrue: [ 0 ] ifFalse: [ 1 ].
+	^ ticksData + center  - (ticksData at: (ticksData size // 2) + delta)
 ]
