@@ -6,13 +6,29 @@ Class {
 		'headers',
 		'data',
 		'scale',
-		'sums',
-		'chart'
+		'sums'
 	],
 	#category : #'Roassal3-Liker'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #hooks }
+RSLikerVisualization >> answersData [
+	| total doNotKnow |
+	total := headers collect: [ :h | | d |
+		d := data at: h.
+		(d keys 
+			select: [ :k | k isNotEmpty ]
+			thenCollect: [ :k | (d at: k) ]) sum ].
+	doNotKnow := headers collect: [ :h | | d |
+		d := data at: h.
+		d at: 'Do not know' ifAbsent: [ 0 ] ].
+	^ OrderedDictionary new
+		at: 'Answered' put: total - doNotKnow;
+		at: 'Do not know' put: doNotKnow;
+		yourself.
+]
+
+{ #category : #'accessing - defaults' }
 RSLikerVisualization >> defaultContainer [
 	^ RSCanvas new @ RSCanvasController
 ]
@@ -24,7 +40,7 @@ RSLikerVisualization >> example01 [
 		extent: 900@700;
 		position: 100@100'>
 	self
-		fileName: 'survey_when_example.csv';
+		fileName: '.\pharo-local\iceberg\LikerVisualization\survey_when_example.csv';
 		scale: #('Never'
 	     'Sometimes'
 	     'Regularly'
@@ -38,6 +54,12 @@ RSLikerVisualization >> example01 [
 { #category : #accessing }
 RSLikerVisualization >> fileName: aString [
 	fileName := aString
+]
+
+{ #category : #colors }
+RSLikerVisualization >> mainColorPalette [
+	^ NSScale ordinal 
+		range: #('b22222' 'f08080' 'dcdcdc' '6495ed' '00008b')
 ]
 
 { #category : #hooks }
@@ -74,7 +96,7 @@ RSLikerVisualization >> prepareSums [
 
 { #category : #hooks }
 RSLikerVisualization >> renderChartIn: aCanvas [
-	| shape center |
+	| shape center chart |
 	chart := RSChart new.
 	chart container: aCanvas.
 	chart extent: 500@220.
@@ -82,6 +104,7 @@ RSLikerVisualization >> renderChartIn: aCanvas [
 	center := sums min * -1.
 	chart addDecoration: (RSXMarkerDecoration new value: center).
 	sums := sums + center.
+	chart colors: self mainColorPalette.
 	
 	scale do: [ :s | | widths |
 		widths := headers collect: [ :h | (data at: h) at: s ].
@@ -104,6 +127,40 @@ RSLikerVisualization >> renderChartIn: aCanvas [
 	chart build.
 	shape := chart decorations first shape.
 	shape border color: Color black; joinMiter.
+	self renderLegendIn: aCanvas chart: chart labels: scale gapSize: 15.
+]
+
+{ #category : #hooks }
+RSLikerVisualization >> renderDoNotKnowChartIn: aCanvas [
+	| c comp answers left legendShape |
+	answers := self answersData.
+	comp := RSComposite new.
+	c := RSChart new.
+	c extent: 100@ 220.
+	c container: comp.
+	c padding: 10.
+	c colors: self secondColorPalette.
+	left := Array new: (answers at: answers keys anyOne) size withAll: 0.
+	answers keysAndValuesDo: [ :k :list |
+		(c barWidths: list)
+			barSize: 20;
+			left: left.
+		left := left + list.
+		 ].
+	
+	c addDecoration: (RSHorizontalTick new 
+		numberOfTicks: 5;
+		in: [ :tick | tick configuration fontSize: 12 ];
+		color: Color black;
+		integer).
+	c build.
+	c decorations first shape border color: Color black; joinMiter.
+
+	legendShape := self renderLegendIn: comp chart: c labels: answers keys gapSize: 5.
+	RSVerticalLineLayout new gapSize: 25; on: { c shapes. legendShape }.
+	comp adjustToChildren.
+	aCanvas add: comp.
+	RSHorizontalLineLayout on: { aCanvas shapes. comp }.
 ]
 
 { #category : #hooks }
@@ -111,24 +168,37 @@ RSLikerVisualization >> renderIn: aCanvas [
 	self prepareData.
 	self prepareSums.
 	self renderChartIn: aCanvas.
-	self renderLegendIn: aCanvas.
-	
+	self renderDoNotKnowChartIn: aCanvas.
 ]
 
 { #category : #hooks }
-RSLikerVisualization >> renderLegendIn: aCanvas [
-	| b |
+RSLikerVisualization >> renderLegendIn: aCanvas chart: aChart labels: labels gapSize: aNumber [
+	| b res |
 	b := RSLegend new.
 	b defaultLabel color: Color black.
 	b container: aCanvas.
-	b layout horizontal gapSize: 30.
-	b withFrame.
-	b location offset: 0@ 20.
-	scale with: chart plots do: [ :s :plot | b text: s withBoxColor: plot computeColor].
+	b layout grid lineItemsCount: 3; gapSize: aNumber.
+	b location offset: 0@20.
+	labels with: aChart plots do: [ :s :plot | 
+		b text: s withBoxColor: plot computeColor].
+	res := nil.
+	b legendDo: [ :l | 
+		res := l.
+		l 
+			border: RSBorder new;
+			color: (Color white alpha: 0.8);
+			padding: 10. ].
 	b build.
+	^ res
 ]
 
 { #category : #accessing }
 RSLikerVisualization >> scale: aCollection [
 	scale := aCollection
+]
+
+{ #category : #colors }
+RSLikerVisualization >> secondColorPalette [
+	^ NSScale ordinal
+		range: #('358f40' 'ff7f27')
 ]
